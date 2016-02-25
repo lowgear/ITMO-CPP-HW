@@ -5,9 +5,9 @@
 #include <ctype.h>
 
 #define INIT_NUM 32
-#define MAX_NAME_SIZE 50
-#define MAX_NUMBER_SIZE 50
-#define MAX_COMMAND_SIZE 50
+#define MAX_NAME_SIZE 20000
+#define MAX_NUMBER_SIZE 20000
+#define MAX_COMMAND_SIZE 20000
 
 #define CM_FIND "find"
 #define CM_CREATE "create"
