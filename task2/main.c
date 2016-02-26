@@ -176,7 +176,7 @@ void phone_book_find(Phone_Book *pb, char *key) {
     phone_book_init_from_file(pb);
     phone_book_find_name(pb, key);
     phone_book_find_num(pb, key);
-    phone_book_unload_to_file(pb);
+    phone_book_free(pb);
 }
 
 void phone_book_find_name(Phone_Book *pb, char *name) {
