@@ -8,3 +8,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES rational.h)
 add_executable(rationallib ${SOURCE_FILES})
+SET_TARGET_PROPERTIES(rationallib PROPERTIES LINKER_LANGUAGE C++)
