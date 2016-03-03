@@ -17,26 +17,22 @@ rational::rational(int n, int d) {
 
 rational rational::operator+(const rational &a) const {
     rational res(this->num * a.denom + a.num * this->denom, this->denom * a.denom);
-    res.cast();
     return res;
 }
 
 rational rational::operator-(const rational &a) const {
-    rational res(this->num * a.denom - a.num * this->denom, this->denom * a.denom);
-    res.cast();
+    rational res(this->num * a.denom - a.num * this->denom, this->denom * a.denom);;
     return res;
 }
 
 rational rational::operator*(const rational &a) const {
     rational res(this->num * a.num, this->denom * a.denom);
-    res.cast();
     return res;
 }
 
 rational rational::operator/(const rational &a) const {
     int twist = (a.num > 0) ? 1 : -1;
     rational res(this->num * a.denom * twist, this->denom * a.num * twist);
-    res.cast();
     return res;
 }
 
