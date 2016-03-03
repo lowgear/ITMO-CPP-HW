@@ -6,5 +6,5 @@ add_library (Rational rational.cpp)
 
 set(SOURCE_FILES rational.cpp)
 
-install(TARGETS Rational DESTINATION "/lib")
-install(FILES rational.h DESTINATION "/incude")
+install(TARGETS Rational DESTINATION "lib")
+install(FILES rational.h DESTINATION "incude")
