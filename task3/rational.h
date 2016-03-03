@@ -1,8 +1,8 @@
 class rational {
 private:
     int num;
-    unsigned int denom;
-    static unsigned int gcd(unsigned int, unsigned int);
+    int denom;
+    static int gcd(int, int);
     void cast();
 
 public:
@@ -13,5 +13,5 @@ public:
     rational operator*(const rational&) const;
     rational operator/(const rational&) const;
     int getNum() const;
-    unsigned int getDenom() const;
+    int getDenom() const;
 };
