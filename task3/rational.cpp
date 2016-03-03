@@ -11,7 +11,6 @@ rational::rational(int v) {
 rational::rational(int n, int d) {
     num = n;
     denom = d;
-    cast();
 }
 
 rational rational::operator+(const rational &a) const {
