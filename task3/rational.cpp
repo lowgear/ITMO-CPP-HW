@@ -9,31 +9,25 @@ rational::rational(int v) {
 }
 
 rational::rational(int n, int d) {
-    int twist = (d > 0) ? 1 : -1;
-    num = n * twist;
-    denom = d * twist;
-    this->cast();
+    num = n;
+    denom = d;
+    cast();
 }
 
 rational rational::operator+(const rational &a) const {
-    rational res(this->num * a.denom + a.num * this->denom, this->denom * a.denom);
-    return res;
+    return rational(this->num * a.denom + a.num * this->denom, this->denom * a.denom);
 }
 
 rational rational::operator-(const rational &a) const {
-    rational res(this->num * a.denom - a.num * this->denom, this->denom * a.denom);;
-    return res;
+    return rational(this->num * a.denom - a.num * this->denom, this->denom * a.denom);
 }
 
 rational rational::operator*(const rational &a) const {
-    rational res(this->num * a.num, this->denom * a.denom);
-    return res;
+    return rational(this->num * a.num, this->denom * a.denom);
 }
 
 rational rational::operator/(const rational &a) const {
-    int twist = (a.num > 0) ? 1 : -1;
-    rational res(this->num * a.denom * twist, this->denom * a.num * twist);
-    return res;
+    return rational(this->num * a.denom, this->denom * a.num);
 }
 
 int rational::getNum() const {
@@ -45,7 +39,11 @@ int rational::getDenom() const {
 }
 
 void rational::cast() {
-    int g = gcd(((num >= 0) ? num : -num), denom);
+    if (denom < 0) {
+        num = -num;
+        denom = -denom;
+    }
+    int g = gcd((num > 0) ? num : -num, denom);
     num /= g;
     denom /= g;
 }
