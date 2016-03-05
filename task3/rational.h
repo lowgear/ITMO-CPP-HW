@@ -6,8 +6,7 @@ private:
     void cast();
 
 public:
-    rational(int);
-    rational(int, int);
+    rational(int n, int d  = 1);
     rational operator+(const rational&) const;
     rational operator-(const rational&) const;
     rational operator*(const rational&) const;

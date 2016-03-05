@@ -3,11 +3,6 @@
 //
 #include "rational.h"
 
-rational::rational(int v) {
-    num = v;
-    denom = 1;
-}
-
 rational::rational(int n, int d) {
     num = n;
     denom = d;
