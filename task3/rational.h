@@ -1,3 +1,4 @@
+#ifndef RATIONAL
 class rational {
 private:
     int num;
@@ -14,3 +15,5 @@ public:
     int getNum() const;
     int getDenom() const;
 };
+#endif
+#define RATIONAL
