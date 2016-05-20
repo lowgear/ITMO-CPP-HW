@@ -9,7 +9,9 @@
 
 #ifndef TASK_LAZY_STRING_H
 #define TASK_LAZY_STRING_H
-
+/*
+ *Class implementing copy-on-write strings.
+*/
 class lazy_string {
 private:
     std::shared_ptr<std::string> p;
