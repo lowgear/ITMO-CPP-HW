@@ -44,6 +44,12 @@ const char &lazy_string::operator[](size_t i) const {
     return (*p)[begin + i];
 }
 
+size_t min(size_t a, size_t b) {
+    if (a < b)
+        return a;
+    return b;
+}
+
 lazy_string lazy_string::substr(size_t _begin, size_t _ln) const {
     if (_begin > ln)
         throw std::out_of_range("pos is out of range.");
@@ -59,12 +65,6 @@ lazy_string lazy_string::substr(size_t _begin, size_t _ln) const {
 lazy_string::lazy_string() {
     p = std::shared_ptr<std::string>();
     begin = ln = 0;
-}
-
-size_t lazy_string::min(size_t a, size_t b) const {
-    if (a < b)
-        return a;
-    return b;
 }
 
 lazy_string::ref::ref(lazy_string *str, size_t pos) : str(str), pos(pos) { }

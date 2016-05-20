@@ -31,31 +31,85 @@ private:
     };
 
 public:
+    /*
+     * @return Empty string.
+     *
+     * */
     lazy_string();
 
-    lazy_string(const std::string &);
+    /*
+     * @_str String to construct lazy_string from.
+     *
+     * @return String equivalent to _str.
+     *
+     * */
+    lazy_string(const std::string & _str);
 
+    /*
+     * @return Size of internal storage of string.
+     */
     size_t size();
 
+    /*
+     * @return Amount of characters in string.
+     */
     size_t length();
 
-    ref at(size_t);
+    /*
+     * @pos Index of char in string wanted.
+     *
+     * @return "Smart" reference to the char at pos which provides mutability.
+     */
+    ref at(size_t pos);
 
-    char at(size_t) const;
+    /*
+     * @pos Index of char in string wanted.
+     *
+     * @return Char code of char at pos.
+     */
+    char at(size_t pos) const;
 
-    ref operator[](size_t);
+    /*
+     * @pos Index of char in string wanted.
+     *
+     * @return "Smart" reference to the char at pos which provides mutability.
+     */
+    ref operator[](size_t pos);
 
-    const char &operator[](size_t) const;
+    /*
+     * @pos Index of char in string wanted.
+     *
+     * @return Char code of char at pos.
+     */
+    const char &operator[](size_t pos) const;
 
+    /*
+     * @pos Index from which wanted substring starts. By default substring matches string and pos is 0.
+     *
+     * @len Length of wanted substring. By default is so that all chars till the end are taken.
+     *
+     * @return Lasy_string from pos of length min of len and chars after pos.
+     */
     lazy_string substr(size_t pos = 0, size_t len = std::string::npos) const;
 
-    size_t min(size_t a, size_t b) const;
-
+    /*
+     * @return std::string object equivalent to this.
+     */
     operator std::string() const;
 
-    friend std::istream &operator>>(std::istream &, lazy_string &);
+    /*
+     * @in Stream to read from.
+     *
+     * @tar Lazy_string to read to.
+     */
+    friend std::istream &operator>>(std::istream &in, lazy_string &tar);
 
-    friend std::ostream &operator<<(std::ostream &, const lazy_string &);
+    /*
+     * @out Stream to write to.
+     *
+     * @tar Lazy_string to write.
+     */
+    friend std::ostream &operator<<(std::ostream &out, const lazy_string &tar);
 };
 
 #endif //TASK_LAZY_STRING_H
