@@ -4,190 +4,517 @@
 
 #include "format.h"
 
-template<typename ... Args>
-std::string formatRealizationRequireArgument(FormatSpecifier &,
-                                             std::string const &,
-                                             unsigned long,
-                                             unsigned long,
-                                             Args ...);
+#define UL unsigned long
+#define S std::string
 
-template<typename ... Args>
-std::string formatRealization(FormatSpecifier &,
-                              std::string const &,
-                              unsigned long,
-                              Args ...);
+//const UL UNDEF = (const unsigned long) -2;
 
-template<typename T, typename ... Args>
-std::string formatRealizationRequireValue(FormatSpecifier &,
-                                          std::string const &,
-                                          T,
-                                          Args ...);
-
-bool isFormatSpecifierBegin(char c) {
-    return c == '%';
+void applyTokens(std::queue<Token> &tokens, std::string &res) {
+    if (tokens.empty())
+        return;
+    Token &curToken = tokens.front();
+    if (curToken.str.empty())
+        throw std::out_of_range(NO_ARGS);
+    res += curToken.str;
+    tokens.pop();
+    applyTokens(tokens, res);
 }
 
-bool isSpecifier(char c) {
-    return (c == 'd' ||
-            c == 'i' ||
-            c == 'u' ||
-            c == 'o' ||
-            c == 'x' ||
-            c == 'X' ||
-            c == 'f' ||
-            c == 'F' ||
-            c == 'e' ||
-            c == 'E' ||
-            c == 'g' ||
-            c == 'G' ||
-            c == 'a' ||
-            c == 'A' ||
-            c == 'c' ||
-            c == 's' ||
-            c == 'p' ||
-            c == 'n' ||
-            c == '%');
+#define T int
+
+template<>
+UL checkInt<T>(T arg) {
+    return (UL) arg;
 }
 
-bool isFlag(char c) {
-    return (c == '-' ||
-            c == '+' ||
-            c == ' ' ||
-            c == '#' ||
-            c == '0');
+#undef T
+
+#define T unsigned int
+
+template<>
+UL checkInt<T>(T arg) {
+    return (UL) arg;
 }
 
-struct FormatSpecifier {
-    std::string flags;
-    char specifier;
-    int width;
-    int precision;
+#undef T
 
-    FormatSpecifier() {
-        specifier = 0;
-        width = -1;
-        precision = -1;
-    }
+#define T long
 
-    FormatSpecifier(std::string const &format) {
-
-    }
-
-    bool requireArgument() {
-    }
-
-    bool requireValue() {
-        return (specifier == 'd' ||
-                specifier == 'i' ||
-                specifier == 'u' ||
-                specifier == 'o' ||
-                specifier == 'x' ||
-                specifier == 'X' ||
-                specifier == 'f' ||
-                specifier == 'F' ||
-                specifier == 'e' ||
-                specifier == 'E' ||
-                specifier == 'g' ||
-                specifier == 'G' ||
-                specifier == 'a' ||
-                specifier == 'A' ||
-                specifier == 'c' ||
-                specifier == 's' ||
-                specifier == 'p' ||
-                specifier == 'n');
-    }
-
-    std::string print() {
-
-    }
-
-    template<typename T>
-    std::string print(T arg) {
-
-    }
-
-    void getArgument(unsigned long arg) {
-
-    }
-};
-
-template<typename ... Args>
-std::string format(std::string const &format, Args ... args) {
-    FormatSpecifier formatSpecifier;
-    return formatRealization(formatSpecifier, format, 0, args);
+template<>
+UL checkInt<T>(T arg) {
+    return (UL) arg;
 }
 
-template<typename ... Args>
-std::string formatRealization(FormatSpecifier &formatSpecifier, std::string const &format, unsigned long begin,
-                              Args ... args) {
-    //Find where first format specifier begins
-    unsigned long noSpecifierPrefixLength;
-    for (noSpecifierPrefixLength = 0;
-         begin + noSpecifierPrefixLength < format.length() &&
-         !isFormatSpecifierBegin(format[begin + noSpecifierPrefixLength]);
-         noSpecifierPrefixLength++);
+#undef T
 
-    //No format specifiers found
-    if (begin + noSpecifierPrefixLength == format.length())
-        return format.substr(begin);
+#define T unsigned long int
 
-    //Find first format specifier's length
-    unsigned long specifierLength;
-    for (specifierLength = 1;
-         begin + noSpecifierPrefixLength + specifierLength < format.length() &&
-         !isSpecifier(format[begin + noSpecifierPrefixLength + specifierLength]);
-         specifierLength++);
-
-    formatSpecifier.FormatSpecifier(format.substr(begin + noSpecifierPrefixLength, specifierLength));
-
-    if (formatSpecifier.requireArgument() || formatSpecifier.requireValue())
-        return format.substr(begin, noSpecifierPrefixLength) +
-               formatRealizationRequireArgument(formatSpecifier,
-                                                format,
-                                                begin + noSpecifierPrefixLength + specifierLength,
-                                                args);
-
-    return format.substr(begin, noSpecifierPrefixLength) +
-           formatSpecifier.print() +
-           formatRealization(formatSpecifier,
-                             format,
-                             begin + noSpecifierPrefixLength + specifierLength,
-                             args);
+template<>
+UL checkInt<T>(T arg) {
+    return (UL) arg;
 }
 
-template<typename ... Args>
-std::string formatRealizationRequireArgument(FormatSpecifier &formatSpecifier,
-                                             std::string const &format,
-                                             unsigned long begin,
-                                             unsigned long arg,
-                                             Args ... args) {
-    formatSpecifier.getArgument(arg);
-    if (formatSpecifier.requireArgument())
-        return formatRealizationRequireArgument(formatSpecifier,
-                                                format,
-                                                begin,
-                                                args);
-    if (formatSpecifier.requireValue())
-        return formatRealizationRequireValue(formatSpecifier,
-                                             format,
-                                             begin,
-                                             args);
-    return formatSpecifier.print() +
-           formatRealization(formatSpecifier,
-                             format,
-                             begin,
-                             args);
+#undef T
+
+template<typename T>
+S prePrint(Token &token, T &arg) {
+    S tmp = print(token, arg);
+    token.spec = s;
+    token.length = none;
+    return formatString(token, tmp);
 }
 
-template<typename T, typename ... Args>
-std::string formatRealizationRequireValue(FormatSpecifier &formatSpecifier,
-                                          std::string const &format,
-                                          unsigned long begin,
-                                          T arg,
-                                          Args ... args) {
-    return formatSpecifier.print(arg) +
-           formatRealization(formatSpecifier,
-                             format,
-                             begin,
-                             args);
+//s
+#define T std::string
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == s &&
+        token.length == none) {
+        S s;
+        if (token.width > arg.length()) {
+            UL lack = token.width - arg.length();
+            if (token.left)
+                s = arg + S(lack, token.fill);
+            else
+                s = S(lack, token.fill) + arg;
+        } else
+            s = arg;
+        /*for (UL i = 0; i < lack; i++)
+            if (token.left)
+                s += token.fill;
+            else
+                s = token.fill + s;*/
+        return s;
+    }
+    throw std::invalid_argument(WRONG_ARG);
 }
+
+#undef T
+
+#define T char*
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == s &&
+        token.length == none) {
+        auto s = std::string(arg);
+        return formatString(token, s);
+    }
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T const char*
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == s &&
+        token.length == none) {
+        auto s = std::string(arg);
+        return formatString(token, s);
+    }
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+//d
+#define T int
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == d && token.length == none)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T signed char
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == d && token.length == hh)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T short int
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == d && token.length == h)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T long int
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == d && token.length == l)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T long long int
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == d && token.length == ll)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+//uoxX
+#define T unsigned int
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if ((token.spec == u ||
+         token.spec == o ||
+         token.spec == x ||
+         token.spec == X) &&
+        token.length == none)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T unsigned char
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if ((token.spec == u ||
+         token.spec == o ||
+         token.spec == x ||
+         token.spec == X) &&
+        token.length == hh)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T unsigned short int
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if ((token.spec == u ||
+         token.spec == o ||
+         token.spec == x ||
+         token.spec == X) &&
+        token.length == h)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+//fFeEgGaA
+#define T float
+
+//template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if ((token.spec == f ||
+         token.spec == F ||
+         token.spec == e ||
+         token.spec == E ||
+         token.spec == g ||
+         token.spec == G ||
+         token.spec == a ||
+         token.spec == A) &&
+        token.length == none)
+        return printFloat(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T double
+
+//template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if ((token.spec == f ||
+         token.spec == F ||
+         token.spec == e ||
+         token.spec == E ||
+         token.spec == g ||
+         token.spec == G ||
+         token.spec == a ||
+         token.spec == A) &&
+        token.length == none)
+        return printFloat(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+#define T long double
+
+//template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if ((token.spec == f ||
+         token.spec == F ||
+         token.spec == e ||
+         token.spec == E ||
+         token.spec == g ||
+         token.spec == G ||
+         token.spec == a ||
+         token.spec == A) &&
+        token.length == L)
+        return printFloat(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+//c
+#define T char
+
+template S prePrint(Token &, T &);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == c &&
+        token.length == none)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+#undef T
+
+//p
+#define T void*
+
+template S prePrint(Token &, T&);
+
+template<>
+std::string formatString<T>(Token &token, T arg) {
+    if (token.spec == p &&
+        token.length == none)
+        return prePrint(token, arg);
+    throw std::invalid_argument(WRONG_ARG);
+}
+
+bool isSpec(const char c) {
+    switch (c) {
+        case 'd':
+        case 'u':
+        case 'o':
+        case 'x':
+        case 'X':
+        case 'f':
+        case 'F':
+        case 'e':
+        case 'E':
+        case 'g':
+        case 'G':
+        case 'a':
+        case 'A':
+        case 'c':
+        case 's':
+        case 'p':
+        case 'n':
+        case '%':
+            return true;
+        default:
+            return false;
+    }
+}
+
+void parseTokens(const std::string &string, std::queue<Token> &queue) {
+    UL pos = 0;
+    while (pos < string.length()) {
+        UL end = pos;
+        while (end < string.length() && string[end] != '%')
+            end++;
+        if (pos != end)
+            queue.push(Token(string, pos, end));
+        if (end >= string.length())
+            break;
+        pos = end;
+        end++;
+        while (end < string.length() && !isSpec(string[end]))
+            end++;
+        if (end >= string.length())
+            throw std::invalid_argument(WRONG_SPEC);
+        end++;
+        queue.push(Token(string, pos, end));
+        pos = end;
+    }
+}
+
+Token::Token(const S &string, const UL begin, const UL end) {
+    if (string[begin] != '%') {
+        str = string.substr(begin, end - begin);
+        return;
+    }
+    if (string.substr(begin, end - begin) == "%%") {
+        str = "%";
+        return;
+    }
+    UL pos = begin;
+    while (true) {
+        pos++;
+        switch (string[pos]) {
+            case '-':
+                left = true;
+                continue;
+            case '+':
+                sign = true;
+                continue;
+            case ' ':
+                no_sign_is_space = true;
+                continue;
+            case '#':
+                oct_hex_format = true;
+                continue;
+            case '0':
+                fill = '0';
+                continue;
+            default:
+                goto FLAG_END;
+        }
+        FLAG_END:
+        break;
+    }
+
+    if (string[pos] == '*') {
+        width = NEED_READ;
+        pos++;
+    } else {
+        width = 0;
+        while (isdigit(string[pos]))
+            width = width * 10 + (string[pos++] - '0');
+    }
+
+    if (string[pos] == '.') {
+        pos++;
+        if (string[pos] == '*') {
+            precision = NEED_READ;
+            pos++;
+        } else {
+            if (!isdigit(string[pos]))
+                throw std::invalid_argument(WRONG_SPEC);
+            precision = 0;
+            if (string[pos] != '0')
+                while (isdigit(string[pos]))
+                    precision = precision * 10 + (string[pos++] - '0');
+            else
+                pos++;
+        }
+    }
+
+    S _length = string.substr(pos, end - 1 - pos);
+    if (_length == S(""))
+        length = none;
+    else if (_length == "hh")
+        length = hh;
+    else if (_length == "h")
+        length = h;
+    else if (_length == "l")
+        length = l;
+    else if (_length == "ll")
+        length = ll;
+    else if (_length == "L")
+        length = L;
+    else
+        throw std::invalid_argument(WRONG_SPEC);
+    switch (string[end - 1]) {
+        case 'd':
+        case 'i':
+            spec = d;
+            break;
+        case 'u':
+            spec = u;
+            break;
+        case 'o':
+            spec = o;
+            break;
+        case 'x':
+            spec = x;
+            break;
+        case 'X':
+            spec = X;
+            break;
+        case 'f':
+            spec = f;
+            break;
+        case 'F':
+            spec = F;
+            break;
+        case 'e':
+            spec = e;
+            break;
+        case 'E':
+            spec = E;
+            break;
+        case 'g':
+            spec = g;
+            break;
+        case 'G':
+            spec = G;
+            break;
+        case 'a':
+            spec = a;
+            break;
+        case 'A':
+            spec = A;
+            break;
+        case 'c':
+            spec = c;
+            break;
+        case 's':
+            spec = s;
+            break;
+        case 'p':
+            spec = p;
+            break;
+        case 'n':
+            spec = n;
+            break;
+        default:
+            throw std::invalid_argument(WRONG_SPEC);
+    }
+
+    origin = string.substr(begin, end - begin);
+}
+
+#undef T
+
+#undef UL
+#undef S
