@@ -9,13 +9,13 @@
 
 //const UL UNDEF = (const unsigned long) -2;
 
-void applyTokens(std::queue<Token> &tokens, std::string &res) {
+void applyTokens(std::queue<Token> &tokens, std::ostringstream &res) {
     if (tokens.empty())
         return;
     Token &curToken = tokens.front();
     if (curToken.str.empty())
         throw std::out_of_range(NO_ARGS);
-    res += curToken.str;
+    res << curToken.str;
     tokens.pop();
     applyTokens(tokens, res);
 }
@@ -55,6 +55,33 @@ UL checkInt<T>(T arg) {
 }
 
 #undef T
+
+template<typename T>
+S print(Token &token, T &arg) {
+    UL wBeg = 0;
+    S &spec = token.origin;
+    const char *cSpec;
+    while (wBeg < spec.length() && (spec[wBeg] == '0' || !isdigit(spec[wBeg])) && spec[wBeg] != '.' &&
+           spec[wBeg] != '*')
+        wBeg++;
+    UL wEnd = wBeg;
+    if (spec[wBeg] != '*') {
+        while (wEnd < spec.length() && isdigit(spec[wEnd]))
+            wEnd++;
+    } else
+        wEnd++;
+    spec = spec.substr(0, wBeg) + spec.substr(wEnd);
+    cSpec = spec.c_str();
+
+    char *c_res = new char[MIN_C_STR_LEN];
+    sprintf(c_res, cSpec, arg);
+    S res = S(c_res);
+    delete[] c_res;
+
+    return res;
+}
+
+
 
 template<typename T>
 S prePrint(Token &token, T &arg) {
@@ -122,7 +149,7 @@ std::string formatString<T>(Token &token, T arg) {
 
 //d
 #define T int
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -135,7 +162,7 @@ std::string formatString<T>(Token &token, T arg) {
 #undef T
 
 #define T signed char
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -148,7 +175,7 @@ std::string formatString<T>(Token &token, T arg) {
 #undef T
 
 #define T short int
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -161,7 +188,7 @@ std::string formatString<T>(Token &token, T arg) {
 #undef T
 
 #define T long int
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -174,7 +201,7 @@ std::string formatString<T>(Token &token, T arg) {
 #undef T
 
 #define T long long int
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -188,7 +215,7 @@ std::string formatString<T>(Token &token, T arg) {
 
 //uoxX
 #define T unsigned int
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -205,7 +232,7 @@ std::string formatString<T>(Token &token, T arg) {
 #undef T
 
 #define T unsigned char
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -222,7 +249,7 @@ std::string formatString<T>(Token &token, T arg) {
 #undef T
 
 #define T unsigned short int
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -238,10 +265,62 @@ std::string formatString<T>(Token &token, T arg) {
 
 #undef T
 
+template <typename T>
+S printFloat(Token &token, T arg) {
+    S res;
+    std::ostringstream _res;
+    switch (token.spec) {
+        case F:
+            _res << std::uppercase;
+        case f:
+            _res << std::fixed;
+            break;
+        case E:
+            _res << std::uppercase;
+        case e:
+            _res << std::scientific;
+            break;
+        case G:
+            _res << std::uppercase;
+        case g:
+            //TODO: shortest rep
+            break;
+        case A:
+        case a:
+            return "";//TODO: hexFloat
+    }
+
+    if (arg < 0) {
+        _res << "-";
+        arg = -arg;
+    }
+    else if (token.sign)
+        _res << "+";
+    else if (token.no_sign_is_space)
+        _res << " ";
+
+    if (token.precision != DEFAULT_PREC)
+        _res.precision(token.precision);
+
+    _res << arg;
+    res = _res.str();
+
+    if (token.width > res.length()) {
+        UL lack = token.width - res.length();
+        if (token.left)
+            res = res + S(lack, token.fill);
+        else
+            res = S(lack, token.fill) + res;
+    }
+
+    return res;
+}
+
 //fFeEgGaA
 #define T float
 
 //template S prePrint(Token &, T &);
+template S printFloat(Token &, T);
 
 template<>
 std::string formatString<T>(Token &token, T arg) {
@@ -263,6 +342,7 @@ std::string formatString<T>(Token &token, T arg) {
 #define T double
 
 //template S prePrint(Token &, T &);
+template S printFloat(Token &, T);
 
 template<>
 std::string formatString<T>(Token &token, T arg) {
@@ -284,6 +364,7 @@ std::string formatString<T>(Token &token, T arg) {
 #define T long double
 
 //template S prePrint(Token &, T &);
+template S printFloat(Token &, T);
 
 template<>
 std::string formatString<T>(Token &token, T arg) {
@@ -304,7 +385,7 @@ std::string formatString<T>(Token &token, T arg) {
 
 //c
 #define T char
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T &);
 
 template<>
@@ -319,7 +400,7 @@ std::string formatString<T>(Token &token, T arg) {
 
 //p
 #define T void*
-
+template S print(Token &, T &arg);
 template S prePrint(Token &, T&);
 
 template<>
@@ -329,6 +410,8 @@ std::string formatString<T>(Token &token, T arg) {
         return prePrint(token, arg);
     throw std::invalid_argument(WRONG_ARG);
 }
+
+#undef T
 
 bool isSpec(const char c) {
     switch (c) {
@@ -514,7 +597,7 @@ Token::Token(const S &string, const UL begin, const UL end) {
     origin = string.substr(begin, end - begin);
 }
 
-#undef T
+
 
 #undef UL
 #undef S
