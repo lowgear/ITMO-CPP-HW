@@ -3,4 +3,11 @@ project(task4)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(task4 ${SOURCE_FILES} format.cpp format.h)
+set(SOURCE_FILES main.cpp)
+add_executable(Test ${SOURCE_FILES})
+add_library(format format.cpp)
+
+target_link_libraries(Test format)
+
+install(TARGETS format DESTINATION lib)
+install(FILES format.h DESTINATION include)
